@@ -23,7 +23,8 @@ import {
   KeyValueChangeRecord,
   KeyValueDiffer,
   KeyValueDiffers,
-  KeyValueChanges
+  KeyValueChanges,
+  ChangeDetectorRef
 } from '@angular/core';
 
 import { Subject } from 'rxjs';
@@ -116,8 +117,10 @@ export class NgComponentOutlet implements OnChanges, OnDestroy, DoCheck {
     private _differs:KeyValueDiffers) {}
 
   ngDoCheck() {
+    let inputChanges;
+    let outputChanges;
     if(this._inputDiffer){
-      const inputChanges = this._inputDiffer.diff(this._inputs);
+      inputChanges = this._inputDiffer.diff(this._inputs);
       if(inputChanges) {
         this._updateIO(inputChanges, (key:string, value:any) =>
           this._componentRef.instance[key] = value);
@@ -125,13 +128,17 @@ export class NgComponentOutlet implements OnChanges, OnDestroy, DoCheck {
     }
 
     if(this._outputDiffer){
-      const outputChanges = this._outputDiffer.diff(this._outputs);
+      outputChanges = this._outputDiffer.diff(this._outputs);
       if(outputChanges){
         this._updateIO(outputChanges, (key:string, value:Function) =>
           this._componentRef.instance[key].pipe(
             takeUntil(this._unsubscribe$)).subscribe(value)
         );
       }
+    }
+
+    if(outputChanges || inputChanges){
+      this._componentRef.injector.get(ChangeDetectorRef).markForCheck();
     }
   }
 
