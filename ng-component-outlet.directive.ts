@@ -155,24 +155,27 @@ export class NgComponentOutlet implements OnChanges, OnDestroy, DoCheck {
     this._componentRef = null;
 
     if (this.ngComponentOutlet) {
-      const elInjector = this.ngComponentOutletInjector || this._viewContainerRef.parentInjector;
+      const elInjector = this.ngComponentOutletInjector ||
+        this._viewContainerRef.parentInjector;
 
       if (changes['ngComponentOutletNgModuleFactory']) {
-        if (this._moduleRef) this._moduleRef.destroy();
+        if (this._moduleRef) this._destroy();
 
         if (this.ngComponentOutletNgModuleFactory) {
           const parentModule = elInjector.get(NgModuleRef);
-          this._moduleRef = this.ngComponentOutletNgModuleFactory.create(parentModule.injector);
+          this._moduleRef = this.ngComponentOutletNgModuleFactory
+            .create(parentModule.injector);
         } else {
           this._moduleRef = null;
         }
       }
 
-      const componentFactoryResolver = this._moduleRef ? this._moduleRef.componentFactoryResolver :
+      const componentFactoryResolver = this._moduleRef ?
+        this._moduleRef.componentFactoryResolver :
         elInjector.get(ComponentFactoryResolver);
 
-      this._componentFactory =
-        componentFactoryResolver.resolveComponentFactory(this.ngComponentOutlet);
+      this._componentFactory = componentFactoryResolver
+        .resolveComponentFactory(this.ngComponentOutlet);
 
       this._componentRef = this._viewContainerRef.createComponent(
         this._componentFactory !, this._viewContainerRef.length, elInjector,
@@ -186,14 +189,21 @@ export class NgComponentOutlet implements OnChanges, OnDestroy, DoCheck {
   }
 
   private _updateIO(changes:KeyValueChanges<string, any>, setter:Function) {
-    changes.forEachRemovedItem((r:KeyValueChangeRecord<string, any>)=> setter(r.key, null));
-    changes.forEachAddedItem((r:KeyValueChangeRecord<string, any>)=> setter(r.key, r.currentValue))
-    changes.forEachChangedItem((r:KeyValueChangeRecord<string, any>)=> setter(r.key, r.currentValue))
+    changes.forEachRemovedItem((r:KeyValueChangeRecord<string, any>) =>
+      setter(r.key, null));
+    changes.forEachAddedItem((r:KeyValueChangeRecord<string, any>) =>
+      setter(r.key, r.currentValue))
+    changes.forEachChangedItem((r:KeyValueChangeRecord<string, any>) =>
+      setter(r.key, r.currentValue))
   }
 
-  ngOnDestroy() {
+  private _destroy(){
     this._unsubscribe$.next();
     this._unsubscribe$.complete();
     if (this._moduleRef) this._moduleRef.destroy();
+  }
+
+  ngOnDestroy() {
+    this._destroy();
   }
 }
