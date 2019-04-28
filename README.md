@@ -14,11 +14,10 @@ Output:{
 };">
 ```
 ##caveat
-declare componentFn as arrow function otherwise 'this' will be undefined !!!!
+declare componentFn as arrow function otherwise 'this' will be of type SafeSubscriber 
+instead of your component.
 eg: componentFn = (value) => {
  ...
 }
-
 instead of:
-
-componentFn(value){} like you normally do.
+componentFn(value){}.
